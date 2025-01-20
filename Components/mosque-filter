@@ -1,0 +1,48 @@
+import { Button } from "@components/ui/button";
+
+interface FilterOption {
+  value: string;
+  label: string;
+}
+
+interface MosqueFilterProps {
+  activeFilter: FilterOption;
+  onFilterChange: (filter: FilterOption) => void;
+  counts: {
+    all: number;
+    'one-off': number;
+    ongoing: number;
+    waqf: number;
+  };
+}
+
+export function MosqueFilter({ activeFilter, onFilterChange, counts }: MosqueFilterProps) {
+  return (
+    <div className="flex justify-center space-x-4 mb-8">
+      <Button
+        variant={activeFilter === 'all' ? 'default' : 'outline'}
+        onClick={() => onFilterChange('all')}
+      >
+        All Needs ({counts.all})
+      </Button>
+      <Button
+        variant={activeFilter === 'one-off' ? 'default' : 'outline'}
+        onClick={() => onFilterChange('one-off')}
+      >
+        One-off Needs ({counts['one-off']})
+      </Button>
+      <Button
+        variant={activeFilter === 'ongoing' ? 'default' : 'outline'}
+        onClick={() => onFilterChange('ongoing')}
+      >
+        Ongoing Needs ({counts.ongoing})
+      </Button>
+      <Button
+        variant={activeFilter === 'waqf' ? 'default' : 'outline'}
+        onClick={() => onFilterChange('waqf')}
+      >
+        Waqf Fund ({counts.waqf})
+      </Button>
+    </div>
+  )
+}
