@@ -1,0 +1,173 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
+import { MoonIcon, MapPin, Users, Banknote } from 'lucide-react'
+
+// This would typically come from a database
+const mosqueData = {
+  id: 1,
+  name: "London Central Mosque",
+  location: "London, United Kingdom",
+  image: "/placeholder.svg?height=300&width=500",
+  description: "A prominent mosque in the heart of London, serving the local Muslim community.",
+  totalDonations: 15000,
+  totalDonors: 250,
+  oneOffNeeds: [
+    { id: 'roof', name: 'Roof Repair', price: 5000, raised: 2000 },
+    { id: 'ac', name: 'New AC System', price: 3000, raised: 1500 },
+  ],
+  ongoingNeeds: [
+    { id: 'cleaning', name: 'Monthly Cleaning Service', monthlyPrice: 500, subscribers: 20 },
+    { id: 'classes', name: 'Weekly Islamic Classes', monthlyPrice: 800, subscribers: 15 },
+  ],
+  recentDonations: [
+    { id: 1, amount: 100, date: '2023-06-15', type: 'One-off', project: 'Roof Repair' },
+    { id: 2, amount: 50, date: '2023-06-14', type: 'Monthly', project: 'Cleaning Service' },
+    { id: 3, amount: 200, date: '2023-06-13', type: 'One-off', project: 'New AC System' },
+    { id: 4, amount: 75, date: '2023-06-12', type: 'Monthly', project: 'Islamic Classes' },
+    { id: 5, amount: 150, date: '2023-06-11', type: 'One-off', project: 'Roof Repair' },
+  ],
+  waqfFund: {
+    totalAmount: 50000,
+    goal: 100000,
+    projects: [
+      { id: 1, name: 'Community Center Construction', allocation: 30000 },
+      { id: 2, name: 'Islamic School Endowment', allocation: 15000 },
+      { id: 3, name: 'Mosque Maintenance Fund', allocation: 5000 },
+    ],
+    recentContributions: [
+      { id: 1, amount: 1000, date: '2023-06-10', contributor: 'Anonymous' },
+      { id: 2, amount: 500, date: '2023-06-09', contributor: 'Fatima H.' },
+      { id: 3, amount: 2000, date: '2023-06-08', contributor: 'Mohammed A.' },
+    ]
+  }
+}
+
+export default function MosqueProfile({ params }: { params: { id: string } }) {
+  // In a real application, we would fetch the mosque data based on the ID
+  // const mosque = await getMosqueData(params.id)
+  const mosque = mosqueData // Using mock data for this example
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <Card className="mb-8 bg-white">
+        <CardHeader className="pb-0">
+          <div className="flex items-center mb-2">
+            <MoonIcon className="w-6 h-6 mr-2 text-black" />
+            <CardTitle className="text-3xl">{mosque.name}</CardTitle>
+          </div>
+          <CardDescription className="flex items-center text-lg">
+            <MapPin className="w-5 h-5 mr-1" />
+            {mosque.location}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <img src={mosque.image || "/placeholder.svg"} alt={mosque.name} className="w-full h-64 object-cover rounded-lg mb-4" />
+          <p className="mb-4 text-gray-700">{mosque.description}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <Card>
+              <CardContent className="flex items-center justify-between p-4 bg-beige-100">
+                <div className="flex items-center">
+                  <Banknote className="w-8 h-8 mr-2 text-black" />
+                  <div>
+                    <p className="text-sm font-medium">Total Donations</p>
+                    <p className="text-2xl font-bold">£{mosque.totalDonations.toLocaleString()}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="flex items-center justify-between p-4 bg-beige-100">
+                <div className="flex items-center">
+                  <Users className="w-8 h-8 mr-2 text-black" />
+                  <div>
+                    <p className="text-sm font-medium">Total Donors</p>
+                    <p className="text-2xl font-bold">{mosque.totalDonors}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="one-off" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsTrigger value="one-off">One-off Needs</TabsTrigger>
+          <TabsTrigger value="ongoing">Ongoing Needs</TabsTrigger>
+          <TabsTrigger value="recent">Recent Donations</TabsTrigger>
+        </TabsList>
+        <TabsContent value="one-off">
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle>One-off Projects</CardTitle>
+              <CardDescription>Current fundraising progress for one-time projects</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-6">
+                {mosque.oneOffNeeds.map((need) => (
+                  <li key={need.id}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium text-lg">{need.name}</span>
+                      <span className="text-sm text-gray-600">£{need.raised} / £{need.price}</span>
+                    </div>
+                    <Progress value={(need.raised / need.price) * 100} className="h-2 bg-sand-200" />
+                    <p className="text-sm text-gray-600 mt-1">
+                      {((need.raised / need.price) * 100).toFixed(1)}% funded
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="ongoing">
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle>Ongoing Needs</CardTitle>
+              <CardDescription>Monthly subscriptions and recurring donations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-6">
+                {mosque.ongoingNeeds.map((need) => (
+                  <li key={need.id} className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-medium text-lg">{need.name}</h3>
+                      <p className="text-sm text-gray-600">£{need.monthlyPrice} / month</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">{need.subscribers} subscribers</p>
+                      <p className="text-sm text-gray-600">£{need.subscribers * need.monthlyPrice} / month</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="recent">
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle>Recent Donations</CardTitle>
+              <CardDescription>Latest contributions to the mosque</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-4">
+                {mosque.recentDonations.map((donation) => (
+                  <li key={donation.id} className="flex justify-between items-center border-b pb-2 last:border-b-0">
+                    <div>
+                      <p className="font-medium">£{donation.amount} - {donation.project}</p>
+                      <p className="text-sm text-gray-600">{donation.type} donation</p>
+                    </div>
+                    <p className="text-sm text-gray-600">{donation.date}</p>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
+
