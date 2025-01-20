@@ -1,0 +1,76 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Check, ChevronsUpDown } from 'lucide-react'
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
+interface Mosque {
+  id: number
+  name: string
+  location: string
+}
+
+interface MosqueSelectorProps {
+  mosques: Mosque[]
+  selectedMosque: Mosque | null
+  onSelect: (mosque: Mosque) => void
+}
+
+export function MosqueSelector({ mosques, selectedMosque, onSelect }: MosqueSelectorProps) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between"
+        >
+          {selectedMosque ? `${selectedMosque.name} - ${selectedMosque.location}` : "Select a mosque..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder="Search mosque..." />
+          <CommandEmpty>No mosque found.</CommandEmpty>
+          <CommandGroup>
+            {mosques.map((mosque) => (
+              <CommandItem
+                key={mosque.id}
+                onSelect={() => {
+                  onSelect(mosque)
+                  setOpen(false)
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    selectedMosque?.id === mosque.id ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {mosque.name} - {mosque.location}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
