@@ -1,0 +1,227 @@
+'use client'
+
+import { useState } from 'react'
+import { useParams } from 'next/navigation'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
+import { MoonIcon as CrescentMoon, MapPin, Banknote, CalendarClock } from 'lucide-react'
+
+const mosques = [
+  { 
+    id: 1, 
+    name: "London Central Mosque", 
+    location: "London, United Kingdom", 
+    description: "A prominent mosque in the heart of London, serving the local Muslim community.", 
+    image: "/placeholder.svg?height=300&width=500",
+    oneOffNeeds: [
+      { id: 'roof', name: 'Roof Repair', price: 1000, raised: 200 },
+      { id: 'ac', name: 'New AC System', price: 1000, raised: 500 },
+    ],
+    ongoingNeeds: [
+      { id: 'cleaning', name: 'Weekly Cleaning Service', monthlyPrice: 200 },
+      { id: 'classes', name: 'Quran Class Fee (1 Student)', monthlyPrice: 50 },
+    ]
+  },
+  { 
+    id: 2, 
+    name: "Suleimaniye Mosque", 
+    location: "London, United Kingdom", 
+    description: "A beautiful mosque inspired by Ottoman architecture, located in East London.", 
+    image: "/placeholder.svg?height=300&width=500",
+    oneOffNeeds: [
+      { id: 'library', name: 'Expand Library Collection', price: 2000, raised: 800 },
+      { id: 'carpets', name: 'New Prayer Hall Carpets', price: 4000, raised: 1000 },
+    ],
+    ongoingNeeds: [
+      { id: 'utilities', name: 'Monthly Utilities', monthlyPrice: 1000 },
+      { id: 'education', name: 'Islamic Education Program', monthlyPrice: 600 },
+    ]
+  },
+  { 
+    id: 3, 
+    name: "Masjid Aisha", 
+    location: "Leicester, United Kingdom", 
+    description: "A community-focused mosque in Leicester, offering various educational programs.", 
+    image: "/placeholder.svg?height=300&width=500",
+    oneOffNeeds: [
+      { id: 'security', name: 'Security System Upgrade', price: 3000, raised: 1500 },
+      { id: 'playground', name: 'Children\'s Playground', price: 5000, raised: 2000 },
+    ],
+    ongoingNeeds: [
+      { id: 'youth', name: 'Youth Programs', monthlyPrice: 500 },
+      { id: 'meals', name: 'Weekly Community Meals', monthlyPrice: 300 },
+    ]
+  },
+]
+
+export default function MosqueDetails() {
+  const { id } = useParams()
+  const mosque = mosques.find(m => m.id === parseInt(id as string))
+  const [selectedOneOffNeed, setSelectedOneOffNeed] = useState('')
+  const [oneOffAmount, setOneOffAmount] = useState('')
+  const [selectedOngoingNeeds, setSelectedOngoingNeeds] = useState<string[]>([])
+  const [ongoingAmount, setOngoingAmount] = useState('')
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [confirmationMessage, setConfirmationMessage] = useState('')
+
+  if (!mosque) {
+    return <div className="container mx-auto py-8 text-center">Mosque not found</div>
+  }
+
+  const handleOneOffDonation = (e: React.FormEvent) => {
+    e.preventDefault()
+    const need = mosque.oneOffNeeds.find(n => n.id === selectedOneOffNeed)
+    const amount = oneOffAmount ? parseFloat(oneOffAmount) : (need ? need.price - need.raised : 0)
+    setConfirmationMessage(`Your one-off donation of £${amount} for ${need?.name} to ${mosque.name} has been received.`)
+    setShowConfirmation(true)
+  }
+
+  const handleSubscription = (e: React.FormEvent) => {
+    e.preventDefault()
+    const totalMonthly = selectedOngoingNeeds.reduce((total, needId) => {
+      const need = mosque.ongoingNeeds.find(n => n.id === needId)
+      return total + (need ? need.monthlyPrice : 0)
+    }, 0)
+    const subscriptionAmount = ongoingAmount ? parseFloat(ongoingAmount) : totalMonthly
+    setConfirmationMessage(`Your monthly subscription of £${subscriptionAmount} to support ${mosque.name} has been set up for 12 months.`)
+    setShowConfirmation(true)
+  }
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <Card className="mb-8">
+        <CardHeader className="pb-0">
+          <div className="flex items-center mb-2">
+            <CrescentMoon className="w-6 h-6 mr-2 text-primary" />
+            <CardTitle className="text-3xl">{mosque.name}</CardTitle>
+          </div>
+          <CardDescription className="flex items-center text-lg">
+            <MapPin className="w-5 h-5 mr-1" />
+            {mosque.location}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <img src={mosque.image} alt={mosque.name} className="w-full h-64 object-cover rounded-lg mb-4" />
+          <p className="mb-4 text-gray-700">{mosque.description}</p>
+          <Tabs defaultValue="one-off" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="one-off" className="text-lg">
+                <Banknote className="w-5 h-5 mr-2" />
+                One-off Donation
+              </TabsTrigger>
+              <TabsTrigger value="ongoing" className="text-lg">
+                <CalendarClock className="w-5 h-5 mr-2" />
+                Monthly Subscription
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="one-off">
+              <form onSubmit={handleOneOffDonation} className="space-y-6">
+                <h2 className="text-2xl font-semibold mb-4">Select a one-off need to support:</h2>
+                <RadioGroup value={selectedOneOffNeed} onValueChange={setSelectedOneOffNeed} className="space-y-4">
+                  {mosque.oneOffNeeds.map((need) => (
+                    <div key={need.id} className="space-y-2 bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={need.id} id={need.id} />
+                        <Label htmlFor={need.id} className="flex justify-between w-full text-lg">
+                          <span>{need.name}</span>
+                          <span className="font-semibold">£{need.price}</span>
+                        </Label>
+                      </div>
+                      <Progress value={(need.raised / need.price) * 100} className="h-2" />
+                      <p className="text-sm text-gray-600">
+                        £{need.raised} raised of £{need.price} (£{need.price - need.raised} remaining)
+                      </p>
+                    </div>
+                  ))}
+                </RadioGroup>
+                <div className="mt-4">
+                  <Label htmlFor="oneOffAmount" className="text-lg mb-2">Custom amount (optional)</Label>
+                  <Input
+                    type="number"
+                    id="oneOffAmount"
+                    placeholder="Enter custom amount"
+                    value={oneOffAmount}
+                    onChange={(e) => setOneOffAmount(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <Button type="submit" className="w-full mt-4 bg-primary hover:bg-primary/90" disabled={!selectedOneOffNeed}>
+                  Make One-off Donation
+                </Button>
+              </form>
+            </TabsContent>
+            <TabsContent value="ongoing">
+              <form onSubmit={handleSubscription} className="space-y-6">
+                <h2 className="text-2xl font-semibold mb-4">Select ongoing needs to support:</h2>
+                <div className="space-y-4">
+                  {mosque.ongoingNeeds.map((need) => (
+                    <div key={need.id} className="flex items-center space-x-2 bg-gray-50 p-4 rounded-lg">
+                      <Checkbox 
+                        id={need.id} 
+                        checked={selectedOngoingNeeds.includes(need.id)}
+                        onCheckedChange={(checked) => {
+                          setSelectedOngoingNeeds(
+                            checked
+                              ? [...selectedOngoingNeeds, need.id]
+                              : selectedOngoingNeeds.filter((id) => id !== need.id)
+                          )
+                        }}
+                      />
+                      <Label htmlFor={need.id} className="flex justify-between w-full text-lg">
+                        <span>{need.name}</span>
+                        <span className="font-semibold">£{need.monthlyPrice}/month</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <Label htmlFor="ongoingAmount" className="text-lg mb-2">Custom monthly amount (optional)</Label>
+                  <Input
+                    type="number"
+                    id="ongoingAmount"
+                    placeholder="Enter custom monthly amount"
+                    value={ongoingAmount}
+                    onChange={(e) => setOngoingAmount(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <p className="mt-4 font-semibold text-lg">
+                  Total monthly subscription: £
+                  {ongoingAmount ? parseFloat(ongoingAmount) : selectedOngoingNeeds.reduce((total, needId) => {
+                    const need = mosque.ongoingNeeds.find(n => n.id === needId)
+                    return total + (need ? need.monthlyPrice : 0)
+                  }, 0)}
+                </p>
+                <Button type="submit" className="w-full mt-4 bg-primary hover:bg-primary/90" disabled={selectedOngoingNeeds.length === 0 && !ongoingAmount}>
+                  Set Up 12-Month Subscription
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Thank you for your support!</DialogTitle>
+            <DialogDescription className="text-lg mt-2">
+              {confirmationMessage}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowConfirmation(false)} className="bg-primary hover:bg-primary/90">Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+add page.tsx
