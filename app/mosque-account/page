@@ -1,0 +1,329 @@
+'use client'
+
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { MoonIcon, MapPin, Users, Banknote, Sprout, PlusCircle, MinusCircle } from 'lucide-react'
+
+// Mock data for the mosque account
+const mosqueData = {
+  id: 1,
+  name: "London Central Mosque",
+  location: "London, United Kingdom",
+  image: "/placeholder.svg?height=300&width=500",
+  description: "A prominent mosque in the heart of London, serving the local Muslim community.",
+  totalDonations: 15000,
+  totalDonors: 250,
+  oneOffNeeds: [
+    { id: 'roof', name: 'Roof Repair', price: 5000, raised: 2000 },
+    { id: 'ac', name: 'New AC System', price: 3000, raised: 1500 },
+  ],
+  ongoingNeeds: [
+    { id: 'cleaning', name: 'Monthly Cleaning Service', monthlyPrice: 500, subscribers: 20 },
+    { id: 'classes', name: 'Weekly Islamic Classes', monthlyPrice: 800, subscribers: 15 },
+  ],
+  waqfFund: {
+    totalAmount: 50000,
+    goal: 100000,
+    projects: [
+      { id: 1, name: 'Community Center Construction', allocation: 30000 },
+      { id: 2, name: 'Islamic School Endowment', allocation: 15000 },
+      { id: 3, name: 'Mosque Maintenance Fund', allocation: 5000 },
+    ],
+  }
+}
+
+export default function MosqueAccount() {
+  const [mosque, setMosque] = useState(mosqueData)
+  const [newOneOffNeed, setNewOneOffNeed] = useState({ name: '', price: '' })
+  const [newOngoingNeed, setNewOngoingNeed] = useState({ name: '', monthlyPrice: '' })
+  const [newWaqfProject, setNewWaqfProject] = useState({ name: '', allocation: '' })
+
+  const handleUpdateMosqueInfo = (e: React.FormEvent) => {
+    e.preventDefault()
+    // In a real application, this would send the updated data to the server
+    console.log('Mosque info updated:', mosque)
+  }
+
+  const handleAddOneOffNeed = () => {
+    if (newOneOffNeed.name && newOneOffNeed.price) {
+      setMosque(prev => ({
+        ...prev,
+        oneOffNeeds: [...prev.oneOffNeeds, { id: Date.now().toString(), ...newOneOffNeed, raised: 0, price: Number(newOneOffNeed.price) }]
+      }))
+      setNewOneOffNeed({ name: '', price: '' })
+    }
+  }
+
+  const handleAddOngoingNeed = () => {
+    if (newOngoingNeed.name && newOngoingNeed.monthlyPrice) {
+      setMosque(prev => ({
+        ...prev,
+        ongoingNeeds: [...prev.ongoingNeeds, { id: Date.now().toString(), ...newOngoingNeed, subscribers: 0, monthlyPrice: Number(newOngoingNeed.monthlyPrice) }]
+      }))
+      setNewOngoingNeed({ name: '', monthlyPrice: '' })
+    }
+  }
+
+  const handleAddWaqfProject = () => {
+    if (newWaqfProject.name && newWaqfProject.allocation) {
+      setMosque(prev => ({
+        ...prev,
+        waqfFund: {
+          ...prev.waqfFund,
+          projects: [...prev.waqfFund.projects, { id: Date.now(), ...newWaqfProject, allocation: Number(newWaqfProject.allocation) }]
+        }
+      }))
+      setNewWaqfProject({ name: '', allocation: '' })
+    }
+  }
+
+  const handleRemoveOneOffNeed = (id: string) => {
+    setMosque(prev => ({
+      ...prev,
+      oneOffNeeds: prev.oneOffNeeds.filter(need => need.id !== id)
+    }))
+  }
+
+  const handleRemoveOngoingNeed = (id: string) => {
+    setMosque(prev => ({
+      ...prev,
+      ongoingNeeds: prev.ongoingNeeds.filter(need => need.id !== id)
+    }))
+  }
+
+  const handleRemoveWaqfProject = (id: number) => {
+    setMosque(prev => ({
+      ...prev,
+      waqfFund: {
+        ...prev.waqfFund,
+        projects: prev.waqfFund.projects.filter(project => project.id !== id)
+      }
+    }))
+  }
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="text-3xl">Mosque Account Management</CardTitle>
+          <CardDescription>Manage your mosque's information and fundraising needs</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleUpdateMosqueInfo} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Mosque Name</Label>
+                <Input
+                  id="name"
+                  value={mosque.name}
+                  onChange={(e) => setMosque(prev => ({ ...prev, name: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  value={mosque.location}
+                  onChange={(e) => setMosque(prev => ({ ...prev, location: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={mosque.description}
+                onChange={(e) => setMosque(prev => ({ ...prev, description: e.target.value }))}
+              />
+            </div>
+            <Button type="submit">Update Mosque Information</Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Card>
+          <CardContent className="flex items-center justify-between p-4">
+            <div className="flex items-center">
+              <Banknote className="w-8 h-8 mr-2 text-primary" />
+              <div>
+                <p className="text-sm font-medium">Total Donations</p>
+                <p className="text-2xl font-bold">£{mosque.totalDonations.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center justify-between p-4">
+            <div className="flex items-center">
+              <Users className="w-8 h-8 mr-2 text-primary" />
+              <div>
+                <p className="text-sm font-medium">Total Donors</p>
+                <p className="text-2xl font-bold">{mosque.totalDonors}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center justify-between p-4">
+            <div className="flex items-center">
+              <Sprout className="w-8 h-8 mr-2 text-primary" />
+              <div>
+                <p className="text-sm font-medium">Waqf Fund</p>
+                <p className="text-2xl font-bold">£{mosque.waqfFund.totalAmount.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="one-off" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsTrigger value="one-off">One-off Needs</TabsTrigger>
+          <TabsTrigger value="ongoing">Ongoing Needs</TabsTrigger>
+          <TabsTrigger value="waqf">Waqf Fund</TabsTrigger>
+        </TabsList>
+        <TabsContent value="one-off">
+          <Card>
+            <CardHeader>
+              <CardTitle>One-off Projects</CardTitle>
+              <CardDescription>Manage your one-time fundraising projects</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-4 mb-4">
+                {mosque.oneOffNeeds.map((need) => (
+                  <li key={need.id} className="flex items-center justify-between">
+                    <div className="flex-grow mr-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium">{need.name}</span>
+                        <span className="text-sm text-gray-600">£{need.raised} / £{need.price}</span>
+                      </div>
+                      <Progress value={(need.raised / need.price) * 100} className="h-2" />
+                    </div>
+                    <Button variant="destructive" size="icon" onClick={() => handleRemoveOneOffNeed(need.id)}>
+                      <MinusCircle className="h-4 w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex space-x-2">
+                <Input
+                  placeholder="New need name"
+                  value={newOneOffNeed.name}
+                  onChange={(e) => setNewOneOffNeed(prev => ({ ...prev, name: e.target.value }))}
+                />
+                <Input
+                  type="number"
+                  placeholder="Price"
+                  value={newOneOffNeed.price}
+                  onChange={(e) => setNewOneOffNeed(prev => ({ ...prev, price: e.target.value }))}
+                />
+                <Button onClick={handleAddOneOffNeed}>
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="ongoing">
+          <Card>
+            <CardHeader>
+              <CardTitle>Ongoing Needs</CardTitle>
+              <CardDescription>Manage your recurring fundraising needs</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-4 mb-4">
+                {mosque.ongoingNeeds.map((need) => (
+                  <li key={need.id} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{need.name}</p>
+                      <p className="text-sm text-gray-600">£{need.monthlyPrice} / month ({need.subscribers} subscribers)</p>
+                    </div>
+                    <Button variant="destructive" size="icon" onClick={() => handleRemoveOngoingNeed(need.id)}>
+                      <MinusCircle className="h-4 w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex space-x-2">
+                <Input
+                  placeholder="New need name"
+                  value={newOngoingNeed.name}
+                  onChange={(e) => setNewOngoingNeed(prev => ({ ...prev, name: e.target.value }))}
+                />
+                <Input
+                  type="number"
+                  placeholder="Monthly price"
+                  value={newOngoingNeed.monthlyPrice}
+                  onChange={(e) => setNewOngoingNeed(prev => ({ ...prev, monthlyPrice: e.target.value }))}
+                />
+                <Button onClick={handleAddOngoingNeed}>
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="waqf">
+          <Card>
+            <CardHeader>
+              <CardTitle>Waqf Fund</CardTitle>
+              <CardDescription>Manage your Waqf fund projects and allocations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <Label htmlFor="waqfGoal">Waqf Fund Goal</Label>
+                <Input
+                  id="waqfGoal"
+                  type="number"
+                  value={mosque.waqfFund.goal}
+                  onChange={(e) => setMosque(prev => ({ ...prev, waqfFund: { ...prev.waqfFund, goal: Number(e.target.value) } }))}
+                />
+              </div>
+              <Progress value={(mosque.waqfFund.totalAmount / mosque.waqfFund.goal) * 100} className="h-2 mb-4" />
+              <ul className="space-y-4 mb-4">
+                {mosque.waqfFund.projects.map((project) => (
+                  <li key={project.id} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{project.name}</p>
+                      <p className="text-sm text-gray-600">Allocation: £{project.allocation.toLocaleString()}</p>
+                    </div>
+                    <Button variant="destructive" size="icon" onClick={() => handleRemoveWaqfProject(project.id)}>
+                      <MinusCircle className="h-4 w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex space-x-2">
+                <Input
+                  placeholder="New project name"
+                  value={newWaqfProject.name}
+                  onChange={(e) => setNewWaqfProject(prev => ({ ...prev, name: e.target.value }))}
+                />
+                <Input
+                  type="number"
+                  placeholder="Allocation"
+                  value={newWaqfProject.allocation}
+                  onChange={(e) => setNewWaqfProject(prev => ({ ...prev, allocation: e.target.value }))}
+                />
+                <Button onClick={handleAddWaqfProject}>
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
+
