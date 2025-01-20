@@ -1,0 +1,60 @@
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+
+interface NeedDetailsModalProps {
+  isOpen: boolean
+  onClose: () => void
+  need: {
+    id: string
+    name: string
+    price?: number
+    raised?: number
+    monthlyPrice?: number
+    description: string
+  } | null
+}
+
+export function NeedDetailsModal({ isOpen, onClose, need }: NeedDetailsModalProps) {
+  if (!need) return null
+
+  const isOneOff = 'price' in need && 'raised' in need
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{need.name}</DialogTitle>
+          <DialogDescription>
+            {isOneOff ? 'One-off Need' : 'Ongoing Need'}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="mt-4">
+          <p className="text-sm text-gray-500 mb-4">
+            {need.name === 'Weekly Islamic Classes' 
+              ? "Sponsor a student by covering the monthly cost of their classes."
+              : need.description}
+          </p>
+          {isOneOff ? (
+            <div>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="font-medium">Progress</span>
+                <span className="text-gray-600">£{need.raised} / £{need.price}</span>
+              </div>
+              <Progress value={(need.raised! / need.price!) * 100} className="h-2 mb-2" />
+              <p className="text-sm text-gray-600 mb-4">
+                {((need.raised! / need.price!) * 100).toFixed(1)}% funded
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm font-medium mb-4">Monthly cost: £{need.monthlyPrice}</p>
+          )}
+          <Button className="w-full bg-black hover:bg-gray-800 text-white">
+            {isOneOff ? 'Donate Now' : 'Subscribe'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
