@@ -1,0 +1,35 @@
+'use client'
+
+import React, { createContext, useState, useContext, ReactNode } from 'react'
+
+interface Mosque {
+  id: number
+  name: string
+  location: string
+}
+
+interface MosqueContextType {
+  selectedMosque: Mosque | null
+  setSelectedMosque: (mosque: Mosque | null) => void
+}
+
+const MosqueContext = createContext<MosqueContextType | undefined>(undefined)
+
+export const MosqueProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [selectedMosque, setSelectedMosque] = useState<Mosque | null>(null)
+
+  return (
+    <MosqueContext.Provider value={{ selectedMosque, setSelectedMosque }}>
+      {children}
+    </MosqueContext.Provider>
+  )
+}
+
+export const useMosqueContext = () => {
+  const context = useContext(MosqueContext)
+  if (context === undefined) {
+    throw new Error('useMosqueContext must be used within a MosqueProvider')
+  }
+  return context
+}
+
