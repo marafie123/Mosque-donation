@@ -1,0 +1,151 @@
+'use client'
+
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { useMosqueContext } from '@/contexts/MosqueContext'
+
+// Mock data for the profile
+const profile = {
+  name: "John Doe",
+  email: "john.doe@example.com",
+  avatar: "/placeholder.svg?height=100&width=100",
+  totalDonated: 1250,
+  oneOffDonations: [
+    { id: 1, date: "2023-05-15", mosque: "London Central Mosque", amount: 200, project: "Roof Repair" },
+    { id: 2, date: "2023-06-02", mosque: "Suleimaniye Mosque", amount: 150, project: "Library Expansion" },
+  ],
+  subscriptions: [
+    { id: 1, mosque: "London Central Mosque", amount: 50, frequency: "Monthly", project: "Cleaning Service" },
+    { id: 2, mosque: "Masjid Aisha", amount: 30, frequency: "Monthly", project: "Youth Programs" },
+  ]
+}
+
+export default function DonorProfile() {
+  const [activeSubscriptions, setActiveSubscriptions] = useState(profile.subscriptions)
+  const { selectedMosque, setSelectedMosque } = useMosqueContext()
+
+  const handleCancelSubscription = (id: number) => {
+    setActiveSubscriptions(activeSubscriptions.filter(sub => sub.id !== id))
+  }
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <Card className="mb-8">
+        <CardHeader className="flex flex-row items-center space-x-4 pb-2">
+          <Avatar className="w-20 h-20">
+            <AvatarImage src={profile.avatar} alt={profile.name} />
+            <AvatarFallback>{profile.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+          </Avatar>
+          <div>
+            <CardTitle className="text-2xl">{profile.name}</CardTitle>
+            <CardDescription>{profile.email}</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-lg font-semibold mb-4">Total Donated: £{profile.totalDonated}</p>
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-2">My Mosque</h3>
+            {selectedMosque ? (
+              <div className="bg-olive-100 p-4 rounded-lg">
+                <p className="font-medium text-olive-800">{selectedMosque.name}</p>
+                <p className="text-sm text-olive-600">{selectedMosque.location}</p>
+                <Button 
+                  variant="outline" 
+                  className="mt-2" 
+                  onClick={() => setSelectedMosque(null)}
+                >
+                  Remove My Mosque
+                </Button>
+              </div>
+            ) : (
+              <p className="text-gray-600">No mosque selected. Add a mosque from the home page.</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="donations" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="donations">Donation History</TabsTrigger>
+          <TabsTrigger value="subscriptions">Active Subscriptions</TabsTrigger>
+        </TabsList>
+        <TabsContent value="donations">
+          <Card>
+            <CardHeader>
+              <CardTitle>Donation History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Mosque</TableHead>
+                    <TableHead>Project</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {profile.oneOffDonations.map((donation) => (
+                    <TableRow key={donation.id}>
+                      <TableCell>{donation.date}</TableCell>
+                      <TableCell>{donation.mosque}</TableCell>
+                      <TableCell>{donation.project}</TableCell>
+                      <TableCell className="text-right">£{donation.amount}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="subscriptions">
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Subscriptions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Mosque</TableHead>
+                    <TableHead>Project</TableHead>
+                    <TableHead>Frequency</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {activeSubscriptions.map((subscription) => (
+                    <TableRow key={subscription.id}>
+                      <TableCell>{subscription.mosque}</TableCell>
+                      <TableCell>{subscription.project}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{subscription.frequency}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">£{subscription.amount}</TableCell>
+                      <TableCell className="text-right">
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => handleCancelSubscription(subscription.id)}
+                        >
+                          Cancel
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
+
